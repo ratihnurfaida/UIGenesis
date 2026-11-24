@@ -300,6 +300,46 @@
     food: [1, 3, 5, 4], portfolio: [7, 4, 0, 6], content: [4, 5, 0, 3]
   };
   const stylePalettes = { modern: [0, 2, 7], playful: [4, 5, 0], elegant: [7, 6, 4], natural: [3, 1, 2], minimal: [7, 0, 2] };
+  const stylePaletteNotes = {
+    modern: 'warna tegas dan bersih dengan aksen seimbang',
+    playful: 'warna lebih cerah dan ekspresif, tetap dipadukan dengan latar lembut',
+    elegant: 'warna premium yang lembut dengan aksen hangat',
+    natural: 'warna bumi, hijau, dan material alami',
+    minimal: 'warna netral dan tenang dengan aksen seperlunya'
+  };
+  const stylePaletteThemes = {
+    modern: [
+      { name: 'Nusantara Modern', colors: { primary: '#456b78', secondary: '#a8c0bf', accent: '#d28d6e', background: '#f6f7f5', text: '#29373a' } },
+      { name: 'Laut Modern', colors: { primary: '#3e718e', secondary: '#9bb9c9', accent: '#e5b278', background: '#f5f8fa', text: '#263943' } },
+      { name: 'Mono Modern', colors: { primary: '#48535c', secondary: '#a7adb0', accent: '#c38e77', background: '#f5f5f2', text: '#2b2f32' } }
+    ],
+    playful: [
+      { name: 'Sakura Ceria', colors: { primary: '#d6487f', secondary: '#ffc0d9', accent: '#7963d8', background: '#fff7fa', text: '#402633' } },
+      { name: 'Senja Ceria', colors: { primary: '#e85d3f', secondary: '#ffc675', accent: '#5b69c9', background: '#fff8f0', text: '#3d2a25' } },
+      { name: 'Nusantara Ceria', colors: { primary: '#3c8f86', secondary: '#f1b24a', accent: '#e47478', background: '#f6fcf8', text: '#263b36' } }
+    ],
+    elegant: [
+      { name: 'Mono Elegan', colors: { primary: '#5b5147', secondary: '#b99a6c', accent: '#8f6c78', background: '#faf7f1', text: '#322d29' } },
+      { name: 'Midnight Elegan', colors: { primary: '#9a91b8', secondary: '#779995', accent: '#d3a47d', background: '#1f2028', text: '#f1eee8' } },
+      { name: 'Sakura Elegan', colors: { primary: '#9f6176', secondary: '#d2b4b7', accent: '#a88f76', background: '#faf5f3', text: '#34282b' } }
+    ],
+    natural: [
+      { name: 'Hutan Natural', colors: { primary: '#4f6a4f', secondary: '#a7b897', accent: '#c48f69', background: '#f5f4ec', text: '#30372e' } },
+      { name: 'Kopi Natural', colors: { primary: '#735540', secondary: '#c7aa83', accent: '#9c705a', background: '#f7f2e9', text: '#332b23' } },
+      { name: 'Laut Natural', colors: { primary: '#557b76', secondary: '#b4c7b8', accent: '#be9877', background: '#f4f8f3', text: '#2d3834' } }
+    ],
+    minimal: [
+      { name: 'Mono Minimal', colors: { primary: '#3d4144', secondary: '#b8bbba', accent: '#8a9ba1', background: '#f7f7f5', text: '#272b2d' } },
+      { name: 'Nusantara Minimal', colors: { primary: '#51665e', secondary: '#c4c8bb', accent: '#a47e69', background: '#f6f6f1', text: '#2c332f' } },
+      { name: 'Laut Minimal', colors: { primary: '#496673', secondary: '#b7c1c3', accent: '#b39b80', background: '#f6f7f7', text: '#2b3438' } }
+    ]
+  };
+  function paletteForStyle(style, index) {
+    const indexes = stylePalettes[style] || stylePalettes.modern;
+    const position = indexes.indexOf(index);
+    return stylePaletteThemes[style]?.[position] || PRESETS[index];
+  }
+  const paletteOverrideKey = (style, index) => `${style}:${index}`;
   function paletteSwatches(palette) {
     return `<span class="recommendation-swatches">${COLOR_ROLES.map(role => {
       const color = palette.colors[role.key];
@@ -309,17 +349,20 @@
   }
   let communityPaletteOverrides = {}, communityPaletteDraft = null, communityPaletteEditIndex = null, communityActiveRole = 'primary';
   function getSelectedPalette() {
-    return selectedPaletteSource === 'community' && communityPaletteOverrides[selectedPalette]
-      ? communityPaletteOverrides[selectedPalette]
-      : PRESETS[selectedPalette];
+    const style = $('#appStyle').value;
+    const key = paletteOverrideKey(style, selectedPalette);
+    return selectedPaletteSource === 'community' && communityPaletteOverrides[key]
+      ? communityPaletteOverrides[key]
+      : paletteForStyle(style, selectedPalette);
   }
   function renderBuiltInPalettes(style) {
     const indexes = stylePalettes[style] || stylePalettes.modern;
     const styleName = $('#appStyle').selectedOptions[0].textContent;
     $('#builtInPaletteNote').textContent = `Palet pilihan UIGenesis yang cocok untuk gaya ${styleName}.`;
     $('#builtInPaletteGallery').innerHTML = indexes.map((index, i) => {
-      const palette = communityPaletteOverrides[index] || PRESETS[index];
-      const sourceName = communityPaletteOverrides[index] ? 'Palet kustom' : i === 0 ? 'Pilihan yang disarankan' : 'Palet UIGenesis';
+      const key = paletteOverrideKey(style, index);
+      const palette = communityPaletteOverrides[key] || paletteForStyle(style, index);
+      const sourceName = communityPaletteOverrides[key] ? 'Palet kustom' : i === 0 ? 'Pilihan yang disarankan' : `Gaya ${styleName}`;
       return `<article class="community-palette-item">
         <button type="button" class="recommendation-card community-palette-card" data-community-palette="${index}" aria-pressed="false">
           <span class="recommendation-heading"><span><b>${escapeHtml(palette.name)}</b><small>${sourceName}</small></span><span class="recommendation-choice">Pilih palet</span></span>
@@ -333,7 +376,8 @@
     const palette = communityPaletteDraft;
     if (!palette) return;
     const role = COLOR_ROLES.find(item => item.key === communityActiveRole) || COLOR_ROLES[0];
-    const options = [...new Map(PRESETS.map(preset => [preset.colors[role.key].toLowerCase(), { color: preset.colors[role.key], name: preset.name }])).values()];
+    const style = $('#appStyle').value;
+    const options = [...new Map((stylePaletteThemes[style] || stylePaletteThemes.modern).map(preset => [preset.colors[role.key].toLowerCase(), { color: preset.colors[role.key], name: preset.name }])).values()];
     const editor = $('#communityPaletteEditor');
     editor.hidden = false;
     editor.innerHTML = `
@@ -343,9 +387,10 @@
       <div class="community-editor-actions"><button type="button" class="btn btn-ghost" data-community-edit-cancel>Batal</button><button type="button" class="btn btn-primary" data-community-edit-save>Selesai, gunakan palet</button></div>`;
   }
   function openCommunityPaletteEditor(index) {
+    const style = $('#appStyle').value;
+    const key = paletteOverrideKey(style, index);
     communityPaletteEditIndex = index;
-    communityPaletteDraft = JSON.parse(JSON.stringify(communityPaletteOverrides[index] || PRESETS[index]));
-    communityPaletteDraft.name = PRESETS[index].name;
+    communityPaletteDraft = JSON.parse(JSON.stringify(communityPaletteOverrides[key] || paletteForStyle(style, index)));
     communityActiveRole = 'primary';
     renderCommunityPaletteEditor();
     $('#communityPaletteEditor').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -377,9 +422,9 @@
     selectedPalette = paletteChoices[0];
     selectedPaletteSource = 'recommendation';
     renderBuiltInPalettes(brief.style);
-    $('#recommendationNote').textContent = `Palet disarankan dari kategori ${$('#appCategory').selectedOptions[0].text} dan gaya ${$('#appStyle').selectedOptions[0].text}. Pilih satu untuk lanjut.`;
+    $('#recommendationNote').textContent = `Palet disesuaikan dengan gaya ${$('#appStyle').selectedOptions[0].text}: ${stylePaletteNotes[brief.style] || stylePaletteNotes.modern}. Pilih satu untuk lanjut.`;
     $('#recommendationList').innerHTML = paletteChoices.map((index, i) => {
-      const p = PRESETS[index];
+      const p = paletteForStyle(brief.style, index);
       return `<button type="button" class="recommendation-card ${i === 0 ? 'active' : ''}" data-recommendation="${index}" aria-pressed="${i === 0}">
         <span class="recommendation-heading"><span><b>${p.name}</b><small>${i === 0 ? 'Rekomendasi utama' : 'Pilihan alternatif'}</small></span><span class="recommendation-choice">${i === 0 ? '✓ Dipilih' : 'Pilih palet'}</span></span>
         ${paletteSwatches(p)}
@@ -434,7 +479,8 @@
     }
     if (e.target.closest('[data-community-edit-save]') && communityPaletteDraft) {
       const index = communityPaletteEditIndex;
-      communityPaletteOverrides[index] = { name: `${PRESETS[index].name} (Kustom)`, colors: { ...communityPaletteDraft.colors } };
+      const baseName = paletteForStyle($('#appStyle').value, index).name;
+      communityPaletteOverrides[paletteOverrideKey($('#appStyle').value, index)] = { name: `${baseName} (Kustom)`, colors: { ...communityPaletteDraft.colors } };
       selectedPalette = index;
       selectedPaletteSource = 'community';
       communityPaletteDraft = null;
@@ -481,11 +527,9 @@
     state.customPages = {};
     state.customHtml = null;
     applyPreset(selectedPalette);
-    if (selectedPaletteSource === 'community' && communityPaletteOverrides[selectedPalette]) {
-      state.colors = { ...communityPaletteOverrides[selectedPalette].colors };
-      state.mode = Color.isDark(state.colors.background) ? 'dark' : 'light';
-      syncControls(); syncSwatches(); applyColors(); saveDraft();
-    }
+    state.colors = { ...getSelectedPalette().colors };
+    state.mode = Color.isDark(state.colors.background) ? 'dark' : 'light';
+    syncControls(); syncSwatches(); applyColors(); saveDraft();
     syncControls(); renderMockup(true); saveDraft();
     Stats.bump('mockups');
     $('#mockup').scrollIntoView({ behavior: 'smooth', block: 'center' });

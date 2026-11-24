@@ -7,14 +7,14 @@
   <meta name="description" content="UIGenesis membantu Anda menentukan palet warna dan langsung menghasilkan mockup UI website: landing page, e-commerce, blog, portofolio, dan dashboard.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 </head>
 <body>
 
 <header class="site-nav" id="siteNav">
   <div class="container">
-    <a href="{{ route('home') }}" class="logo"><span class="logo-mark"></span><span>UI<b>Genesis</b></span></a>
+    <a href="{{ route('home') }}" class="logo"><span class="logo-mark" aria-hidden="true">G</span><span>UI<b>Genesis</b></span></a>
     <nav class="nav-links">
       <a href="#fitur">Fitur</a>
       <a href="#cara-kerja">Cara Kerja</a>
@@ -123,7 +123,7 @@
 
 <footer class="footer">
   <div class="container">
-    <a href="{{ route('home') }}" class="logo"><span class="logo-mark"></span><span>UI<b>Genesis</b></span></a>
+    <a href="{{ route('home') }}" class="logo"><span class="logo-mark" aria-hidden="true">G</span><span>UI<b>Genesis</b></span></a>
     <nav><a href="#fitur">Fitur</a><a href="#cara-kerja">Cara Kerja</a><a href="#palet">Palet</a><a href="{{ route('login') }}">Masuk</a></nav>
     <p>© <span id="year"></span> UIGenesis. Proyek demo. Ratih & Kayla</p>
   </div>

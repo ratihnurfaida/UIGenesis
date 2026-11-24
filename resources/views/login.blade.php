@@ -7,13 +7,13 @@
   <meta name="description" content="Masuk ke UIGenesis untuk membuat palet warna dan mockup UI website.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 </head>
 <body>
 <div class="auth">
   <aside class="auth-art">
-    <a href="{{ route('home') }}" class="logo"><span class="logo-mark"></span><span>UI<b style="color:#b9a8ff">Genesis</b></span></a>
+    <a href="{{ route('home') }}" class="logo"><span class="logo-mark" aria-hidden="true">G</span><span>UI<b style="color:#b9a8ff">Genesis</b></span></a>
     <div>
       <div class="auth-swatches" id="artSwatches">
         <i style="background:#6d4aff"></i><i style="background:#00c2a8"></i><i style="background:#ff7a59"></i><i style="background:#fbfaff"></i><i style="background:#1b1530"></i>

@@ -7,7 +7,7 @@
   <meta name="description" content="Dashboard UIGenesis: atur palet warna dan hasilkan mockup UI website.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link id="mockFont" rel="stylesheet" href="">
   <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}?v={{ filemtime(public_path('assets/css/style.css')) }}">
 </head>
@@ -16,7 +16,7 @@
 <div class="app">
   <!-- ============ SIDEBAR ============ -->
   <aside class="sidebar" id="sidebar">
-    <a href="{{ route('home') }}" class="logo"><span class="logo-mark"></span><span>UI<b>Genesis</b></span></a>
+    <a href="{{ route('home') }}" class="logo"><span class="logo-mark" aria-hidden="true">G</span><span>UI<b>Genesis</b></span></a>
 
     <div>
       <div class="side-label">Menu</div>
@@ -109,7 +109,7 @@
               <label class="field"><span>Gaya desain</span><select class="select" id="appStyle"><option value="modern">Modern &amp; bersih</option><option value="playful">Ceria &amp; ekspresif</option><option value="elegant">Elegan &amp; premium</option><option value="natural">Natural &amp; hangat</option><option value="minimal">Minimal &amp; profesional</option></select></label>
               <fieldset class="field option-field"><legend>Halaman yang dibutuhkan</legend><div class="option-check-grid" id="pageOptions"></div></fieldset>
               <fieldset class="field option-field"><legend>Fitur yang dibutuhkan</legend><div class="option-check-grid" id="featureOptions"></div></fieldset>
-              <button class="btn btn-primary btn-block" id="recommendBtn" type="button"><i data-icon="sparkles"></i>Generate Rekomendasi Palet</button>
+              <button class="btn btn-primary btn-block" id="recommendBtn" type="button" data-endpoint="{{ route('ai.palette') }}"><i data-icon="sparkles"></i>Generate Rekomendasi Palet</button>
             </div>
 
             <div class="panel-sec" id="recommendationSection" hidden>

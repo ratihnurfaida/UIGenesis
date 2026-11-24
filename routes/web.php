@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AiPaletteController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -16,4 +17,5 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth.sess
 // Halaman yang hanya bisa dibuka setelah login
 Route::middleware('auth.session')->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/ai/palette', AiPaletteController::class)->name('ai.palette');
 });

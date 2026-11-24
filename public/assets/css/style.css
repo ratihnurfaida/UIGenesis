@@ -21,7 +21,7 @@
   --shadow-sm: 0 1px 2px rgba(18, 18, 26, .06);
   --shadow: 0 10px 30px -12px rgba(18, 18, 26, .18);
   --shadow-lg: 0 30px 60px -20px rgba(45, 25, 130, .35);
-  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
 }
 
@@ -120,10 +120,10 @@ p { margin: 0; }
 .site-nav .container { display: flex; align-items: center; justify-content: space-between; height: 70px; gap: 16px; }
 .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: -.02em; }
 .logo-mark {
-  width: 34px; height: 34px; border-radius: 10px; position: relative; overflow: hidden;
+  width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
   background: conic-gradient(from 200deg, var(--brand), var(--brand-2), var(--brand-3), var(--brand));
+  color: #fff; font-family: var(--font); font-size: 23px; font-weight: 800; line-height: 1;
 }
-.logo-mark::after { content: ""; position: absolute; inset: 8px; border-radius: 4px; background: #fff; opacity: .92; }
 .logo b { color: var(--brand); }
 .nav-links { display: flex; gap: 30px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
 .nav-links a:hover { color: var(--brand); }
@@ -265,7 +265,6 @@ p { margin: 0; }
   position: relative; overflow: hidden; color: #fff; padding: 48px; display: flex; flex-direction: column; justify-content: space-between;
   background: radial-gradient(70% 60% at 10% 10%, #8f73ff 0%, transparent 60%), radial-gradient(60% 60% at 100% 100%, #00c2a8 0%, transparent 60%), #1a1060;
 }
-.auth-art .logo-mark::after { background: #1a1060; }
 .auth-art h2 { font-size: clamp(30px, 3.2vw, 42px); max-width: 460px; }
 .auth-art p { color: #d1caff; max-width: 420px; margin-top: 14px; }
 .auth-swatches { display: flex; gap: 12px; margin: 36px 0; }
@@ -305,7 +304,6 @@ p { margin: 0; }
   position: sticky; top: 0; height: 100vh;
 }
 .sidebar .logo { color: #fff; padding: 0 8px; }
-.sidebar .logo-mark::after { background: var(--side); }
 .side-label { font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #6c6c88; padding: 0 12px; margin-bottom: 8px; }
 .side-nav { display: grid; gap: 4px; }
 .side-nav a {
