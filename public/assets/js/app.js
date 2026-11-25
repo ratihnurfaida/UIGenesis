@@ -78,40 +78,8 @@ const Store = {
   }
 };
 
-/* ---------- Dummy auth ---------- */
+/* ---------- Demo credentials for the login form ---------- */
 const DEMO_ACCOUNT = { email: 'demo@uigenesis.id', password: 'demo123', name: 'Demo Designer' };
-
-const Auth = {
-  user() { return Store.get('uig_user', null); },
-  login(email, password, remember) {
-    email = String(email || '').trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: 'Format email tidak valid.' };
-    if (String(password || '').length < 6) return { ok: false, error: 'Password minimal 6 karakter.' };
-    if (email === DEMO_ACCOUNT.email && password !== DEMO_ACCOUNT.password) {
-      return { ok: false, error: 'Password akun demo salah. Gunakan "demo123".' };
-    }
-    const name = email === DEMO_ACCOUNT.email
-      ? DEMO_ACCOUNT.name
-      : email.split('@')[0].replace(/[._-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    const user = { name, email, plan: 'Pro (Trial)', joined: new Date().toISOString(), remember: !!remember };
-    Store.set('uig_user', user);
-    if (!Store.get('uig_seeded_' + email, false)) {
-      seedProjects();
-      Store.set('uig_seeded_' + email, true);
-    }
-    return { ok: true, user };
-  },
-  logout() {
-    Store.remove('uig_user');
-    const form = document.getElementById('logoutForm');
-    if (form) form.submit();
-  },
-  require() {
-    const u = Auth.user();
-    if (!u) location.replace('/login');
-    return u;
-  }
-};
 
 /* ---------- Projects ---------- */
 const Projects = {

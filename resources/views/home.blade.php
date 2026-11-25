@@ -23,7 +23,7 @@
     </nav>
     <div class="nav-actions" id="navActions">
       <a href="{{ route('login') }}" class="btn btn-ghost">Masuk</a>
-      <a href="{{ route('login') }}" class="btn btn-primary">Coba Gratis</a>
+      <a href="{{ route('register') }}" class="btn btn-primary">Daftar</a>
     </div>
   </div>
 </header>
@@ -35,7 +35,7 @@
       <h1>Pilih warnanya,<br><span class="grad-text">UIGenesis</span> bangun tampilannya.</h1>
       <p class="lead">Tentukan palet warna brand Anda, lalu lihat langsung bagaimana warna itu hidup di landing page, toko online, blog, portofolio, hingga dashboard aplikasi.</p>
       <div class="hero-cta">
-        <a href="{{ route('login') }}" class="btn btn-primary btn-lg"><i data-icon="sparkles"></i>Mulai Mendesain</a>
+        <a href="{{ route('register') }}" class="btn btn-primary btn-lg"><i data-icon="sparkles"></i>Mulai Mendesain</a>
         <a href="#cara-kerja" class="btn btn-ghost btn-lg">Lihat Cara Kerja</a>
       </div>
       <div class="hero-meta">
@@ -115,8 +115,8 @@
   <div class="container">
     <div class="cta-band">
       <h2>Siap mewujudkan ide visual Anda?</h2>
-      <p>Gratis untuk dicoba. Tanpa kartu kredit. Masuk dengan akun demo dalam satu klik.</p>
-      <a href="{{ route('login') }}" class="btn btn-ghost btn-lg"><i data-icon="rocket"></i>Buka Dashboard</a>
+      <p>Buat akun gratis dan mulai ubah inspirasi warna menjadi rancangan website.</p>
+      <a href="{{ route('register') }}" class="btn btn-ghost btn-lg"><i data-icon="rocket"></i>Mulai Gratis</a>
     </div>
   </div>
 </section>
@@ -125,10 +125,11 @@
   <div class="container">
     <a href="{{ route('home') }}" class="logo"><span class="logo-mark"></span><span>UI<b>Genesis</b></span></a>
     <nav><a href="#fitur">Fitur</a><a href="#cara-kerja">Cara Kerja</a><a href="#palet">Palet</a><a href="{{ route('login') }}">Masuk</a></nav>
-    <p>© <span id="year"></span> UIGenesis. Proyek demo. Ratih & Kayla</p>
+    <p>© <span id="year"></span> UIGenesis</p>
   </div>
 </footer>
 
+<script>window.UIGENESIS_AUTHENTICATED = @json(session()->has('uig_user'));</script>
 <script src="{{ asset('assets/js/app.js') }}"></script>
 <script src="{{ asset('assets/js/mockups.js') }}"></script>
 <script>
@@ -139,11 +140,6 @@
     const nav = document.getElementById('siteNav');
     const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 10);
     window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
-
-    // If already logged in, swap nav actions
-    if (Auth.user()) {
-      document.getElementById('navActions').innerHTML = '<a href="{{ route('dashboard') }}" class="btn btn-primary">Buka Dashboard</a>';
-    }
 
     // Palette showcase
     const grid = document.getElementById('paletteGrid');
@@ -156,7 +152,7 @@
       const b = e.target.closest('[data-i]');
       if (!b) return;
       Store.set('uig_pending_palette', { colors: PRESETS[b.dataset.i].colors });
-      location.href = Auth.user() ? '{{ route('dashboard') }}#generator' : '{{ route('login') }}';
+      location.href = window.UIGENESIS_AUTHENTICATED ? '{{ route('dashboard') }}#generator' : '{{ route('login') }}';
     });
 
     // Hero: cycle through palettes on the live mini-mockup

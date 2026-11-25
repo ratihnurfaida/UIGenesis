@@ -28,8 +28,9 @@
     <div class="auth-form">
       <h1>Selamat datang kembali 👋</h1>
       <p>Masuk ke akun UIGenesis Anda untuk melanjutkan.</p>
+      @if (session('status'))<div class="demo-box" role="status" style="margin:0 0 18px;color:var(--ink-2)">{{ session('status') }}@if (config('mail.default') === 'log')<br><small>Langkah login: buka storage/logs/laravel.log, cari pesan “Verifikasi akun UIGenesis”, klik tautannya, lalu masuk lagi dengan email dan password akun.</small>@endif</div>@endif
 
-      <form id="loginForm" method="POST" action="{{ route('login.store') }}" novalidate>
+      <form id="loginForm" method="POST" action="{{ route('login.store') }}">
         @csrf
         <label class="field"><span>Email</span>
           <div class="input-group"><i data-icon="mail"></i><input class="input" id="email" name="email" type="email" value="{{ old('email') }}" placeholder="nama@email.com" autocomplete="email" required></div>
@@ -56,7 +57,7 @@
         <div>Akun demo:<br><code>demo@uigenesis.id</code> / <code>demo123</code></div>
         <button class="btn btn-sm btn-dark" id="fillDemo" type="button">Isi Otomatis</button>
       </div>
-      <p class="auth-foot">Belum punya akun? Cukup masukkan email apa pun &amp; password ≥ 6 karakter.<br><a href="{{ route('home') }}">← Kembali ke beranda</a></p>
+      <p class="auth-foot">Belum punya akun? <a href="{{ route('register') }}">Daftar gratis</a><br><a href="{{ route('home') }}">← Kembali ke beranda</a></p>
     </div>
   </div>
 </div>
@@ -70,18 +71,10 @@
     const err = document.getElementById('formError');
     const btn = document.getElementById('submitBtn');
 
-    function doLogin(e, p) {
-      email.value = e;
-      pass.value = p;
-      err.textContent = '';
-      const res = Auth.login(e, p, document.getElementById('remember').checked);
-      if (!res.ok) { err.textContent = res.error; return; }
+    form.addEventListener('submit', () => {
       btn.disabled = true;
       btn.textContent = 'Memproses…';
-      form.submit();
-    }
-
-    form.addEventListener('submit', ev => { ev.preventDefault(); const res = Auth.login(email.value, pass.value, document.getElementById('remember').checked); if (!res.ok) { err.textContent = res.error; return; } btn.disabled = true; btn.textContent = 'Memproses…'; form.submit(); });
+    });
 
     document.getElementById('fillDemo').addEventListener('click', () => {
       email.value = DEMO_ACCOUNT.email;
@@ -91,13 +84,14 @@
     });
 
     document.getElementById('googleBtn').addEventListener('click', () => {
-      toast('Login Google disimulasikan…');
-      setTimeout(() => doLogin(DEMO_ACCOUNT.email, DEMO_ACCOUNT.password), 500);
+      email.value = DEMO_ACCOUNT.email;
+      pass.value = DEMO_ACCOUNT.password;
+      form.requestSubmit();
     });
 
     document.getElementById('forgot').addEventListener('click', ev => {
       ev.preventDefault();
-      toast('Ini demo — gunakan akun demo atau email apa pun.');
+      toast('Pemulihan password belum tersedia di versi demo.');
     });
 
     document.getElementById('pwToggle').addEventListener('click', () => {
