@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="mockup-usage-url" content="{{ route('mockup-usage.consume') }}">
   <title>Dashboard — UIGenesis</title>
   <meta name="description" content="Dashboard UIGenesis: atur palet warna dan hasilkan mockup UI website.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +14,6 @@
   <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}?v={{ filemtime(public_path('assets/css/style.css')) }}">
 </head>
 <body>
-<form id="logoutForm" method="POST" action="{{ route('logout') }}" hidden>@csrf</form>
 <div class="app">
   <!-- ============ SIDEBAR ============ -->
   <aside class="sidebar" id="sidebar">
@@ -35,9 +36,9 @@
     </div>
 
     <div class="side-user">
+      <button id="logoutIcon" type="button" title="Keluar" aria-label="Keluar" aria-haspopup="dialog" aria-controls="logoutConfirmModal"><i data-icon="logout"></i></button>
       <div class="avatar" id="userAvatar">D</div>
       <div class="who"><b id="userName">{{ $user['name'] }}</b><span id="userEmail">{{ $user['email'] }}</span></div>
-      <button id="logoutBtn" title="Keluar" aria-label="Keluar"><i data-icon="logout"></i></button>
     </div>
   </aside>
   <div class="overlay" id="overlay"></div>
@@ -100,6 +101,7 @@
           <span data-flow="edit"><b>5</b> Edit</span><i></i>
           <span data-flow="finished"><b>6</b> Selesai</span>
         </div>
+        <p class="muted" id="mockupQuota" data-used="{{ $usage['used'] }}" data-limit="{{ $usage['limit'] ?? '' }}" data-plan="{{ $usage['plan'] }}" style="margin:0 0 14px">@if($usage['limit'] === null) Paket Pro: mockup tanpa batas.@else Mockup gratis tersisa: {{ max(0, $usage['limit'] - $usage['used']) }} dari {{ $usage['limit'] }}.@endif</p>
         <div class="gen stage-form" id="generatorFlow">
           <div class="gen-panel">
             <div class="panel-sec" id="briefSection">
@@ -234,12 +236,23 @@
             <div style="display:grid;gap:10px">
               <button class="btn btn-ghost" id="exportDataBtn"><i data-icon="download"></i>Unduh Semua Proyek (JSON)</button>
               <button class="btn btn-danger" id="resetBtn"><i data-icon="trash"></i>Hapus Semua Proyek</button>
-              <button class="btn btn-dark" id="logoutBtn2"><i data-icon="logout"></i>Keluar</button>
             </div>
           </div>
         </div>
       </section>
     </main>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="logoutConfirmModal" role="dialog" aria-modal="true" aria-labelledby="logoutConfirmTitle" aria-describedby="logoutConfirmDescription">
+  <div class="modal" style="width:min(420px,100%)">
+    <div class="modal-head"><h3 id="logoutConfirmTitle">Konfirmasi Keluar</h3><button class="icon-btn" type="button" data-close aria-label="Tutup konfirmasi"><i data-icon="x"></i></button></div>
+    <p class="muted" id="logoutConfirmDescription" style="margin:0 0 22px">Anda akan keluar dari akun UIGenesis. Apakah Anda yakin ingin melanjutkan?</p>
+    <form method="POST" action="{{ route('logout') }}" class="modal-foot">
+      @csrf
+      <button class="btn btn-ghost" id="cancelLogoutBtn" type="button" data-close>Batal</button>
+      <button class="btn btn-danger" type="submit"><i data-icon="logout"></i>Ya, keluar</button>
+    </form>
   </div>
 </div>
 
@@ -269,6 +282,15 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="upgradeModal" role="dialog" aria-modal="true" aria-labelledby="upgradeTitle">
+  <div class="modal" style="width:min(440px,100%)">
+    <div class="modal-head"><h3 id="upgradeTitle">Kuota mockup gratis habis</h3><button class="icon-btn" data-close aria-label="Tutup"><i data-icon="x"></i></button></div>
+    <p class="muted" style="margin:8px 0 20px">Akun ini sudah menggunakan 5 mockup gratis. Upgrade paket untuk membuat mockup lagi. Pembayaran online belum tersedia di versi demo ini.</p>
+    <div class="modal-foot"><button class="btn btn-primary" data-close>Tutup</button></div>
+  </div>
+</div>
+
+<script>window.UIGENESIS_USER = @json($user);</script>
 <script src="{{ asset('assets/js/app.js') }}"></script>
 <script src="{{ asset('assets/js/mockups.js') }}?v={{ filemtime(public_path('assets/js/mockups.js')) }}"></script>
 <script src="{{ asset('assets/js/prototype-pages/home.js') }}"></script>

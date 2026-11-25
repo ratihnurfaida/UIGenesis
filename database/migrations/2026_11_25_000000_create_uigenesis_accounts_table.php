@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('uigenesis_accounts', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name', 80);
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('verification_token_hash', 64)->nullable();
+            $table->timestamp('verification_expires_at')->nullable();
+            $table->unsignedInteger('mockups_used')->default(0);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('uigenesis_accounts');
+    }
+};

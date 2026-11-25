@@ -2,11 +2,59 @@
    UIGenesis — Dashboard controller
    ========================================================= */
 (function () {
-  const user = Auth.require();
+  const user = window.UIGENESIS_USER;
   if (!user) return;
+  Store.set('uig_user', user);
 
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
+  const quotaEl = $('#mockupQuota');
+  const usageUrl = document.querySelector('meta[name="mockup-usage-url"]').content;
+  let mockupUseInFlight = false;
+
+  function updateMockupQuota(used, limit) {
+    quotaEl.dataset.used = used;
+    quotaEl.dataset.limit = limit ?? '';
+    if (limit === null) {
+      quotaEl.textContent = 'Paket Pro: mockup tanpa batas.';
+      return;
+    }
+    quotaEl.textContent = used >= limit
+      ? `Kuota gratis habis: ${used} dari ${limit} mockup.`
+      : `Mockup gratis tersisa: ${limit - used} dari ${limit}.`;
+  }
+
+  async function consumeMockupUse() {
+    if (mockupUseInFlight) return false;
+    mockupUseInFlight = true;
+    try {
+      const response = await fetch(usageUrl, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+          'Content-Type': 'application/json'
+        },
+        body: '{}'
+      });
+      const result = await response.json();
+      updateMockupQuota(result.used || 0, result.limit ?? 5);
+      if (response.status === 429 && result.limit_reached) {
+        openModal('#upgradeModal');
+        return false;
+      }
+      if (!response.ok) {
+        toast('Kuota belum dapat diperiksa. Coba lagi.', 'error');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      toast('Tidak dapat terhubung ke server untuk memeriksa kuota.', 'error');
+      return false;
+    } finally {
+      mockupUseInFlight = false;
+    }
+  }
 
   /* ---------- 01. DATA DRAFT & STATE ---------- */
   const defaultState = () => ({
@@ -33,15 +81,13 @@
 
   /* ---------- 02. PROFIL PENGGUNA & SESSION UI ---------- */
   function renderUser() {
-    const u = Auth.user() || user;
+    const u = user;
     $('#userName').textContent = u.name;
     $('#userEmail').textContent = u.email;
     $('#userAvatar').textContent = (u.name || 'U').trim().charAt(0).toUpperCase();
     $('#welcomeText').textContent = `Halo, ${u.name.split(' ')[0]}! 👋`;
   }
   renderUser();
-  $('#logoutBtn').addEventListener('click', Auth.logout);
-  $('#logoutBtn2').addEventListener('click', Auth.logout);
 
   /* ---------- 03. ROUTER HALAMAN DASHBOARD ---------- */
   const VIEWS = {
@@ -86,7 +132,21 @@
   $$('.modal-backdrop').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) closeModals(); });
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModals(); });
+  const logoutIcon = $('#logoutIcon');
+  const logoutConfirmModal = $('#logoutConfirmModal');
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const logoutWasOpen = logoutConfirmModal.classList.contains('open');
+    closeModals();
+    if (logoutWasOpen) logoutIcon.focus();
+  });
+  logoutIcon.addEventListener('click', () => {
+    openModal('#logoutConfirmModal');
+    $('#cancelLogoutBtn').focus();
+  });
+  logoutConfirmModal.addEventListener('click', e => {
+    if (e.target === logoutConfirmModal || e.target.closest('[data-close]')) logoutIcon.focus();
+  });
 
   /* =========================================================
      06. GENERATOR: TEMPLATE & KONTROL DASAR
@@ -99,9 +159,10 @@
   // Type buttons
   $('#typeGrid').innerHTML = Object.entries(TEMPLATES).map(([k, t]) =>
     `<button class="type-btn" data-type="${k}">${icon(t.icon)}${t.label}</button>`).join('');
-  $('#typeGrid').addEventListener('click', e => {
+  $('#typeGrid').addEventListener('click', async e => {
     const b = e.target.closest('[data-type]');
     if (!b) return;
+    if (!await consumeMockupUse()) return;
     state.type = b.dataset.type;
     Stats.bump('mockups');
     syncControls(); renderMockup(true); saveDraft();
@@ -543,8 +604,13 @@
     $('#designSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
   $('#backToPaletteBtn').addEventListener('click', () => setFlowStep('palette'));
-  $('#buildAppBtn').addEventListener('click', () => {
+  $('#buildAppBtn').addEventListener('click', async () => {
     if (selectedPalette == null) return;
+    const button = $('#buildAppBtn');
+    button.disabled = true;
+    const allowed = await consumeMockupUse();
+    button.disabled = false;
+    if (!allowed) return;
     const brief = briefValues();
     const typeByCategory = { commerce: 'ecommerce', productivity: 'saas', education: 'landing', food: 'ecommerce', portfolio: 'portfolio', content: 'blog' };
     state.brand = brief.name;
@@ -902,14 +968,14 @@
      15. PENGATURAN PROFIL & DATA
      ========================================================= */
   function renderSettings() {
-    const u = Auth.user();
+    const u = user;
     $('#setName').value = u.name;
     $('#setEmail').value = u.email;
     $('#setPlan').value = u.plan;
   }
   $('#profileForm').addEventListener('submit', e => {
     e.preventDefault();
-    const u = Auth.user();
+    const u = user;
     u.name = $('#setName').value.trim() || u.name;
     Store.set('uig_user', u);
     renderUser();
