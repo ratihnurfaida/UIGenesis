@@ -45,7 +45,7 @@ class AuthController
 
         $email = Str::lower(trim($data['email']));
         $this->importLegacyAccounts();
-        if ($email === self::DEMO_EMAIL || DB::table('uigenesis_accounts')->where('email', $email)->exists()) {
+        if ($email === self::DEMO_EMAIL || DB::table('users')->where('email', $email)->exists()) {
             RateLimiter::hit($registrationKey, 3600);
             return back()->withErrors(['email' => 'Email ini sudah terdaftar. Silakan masuk.'])->withInput($request->except('password', 'password_confirmation'));
         }
@@ -53,7 +53,8 @@ class AuthController
 
         $token = Str::random(64);
         $now = now();
-        $id = DB::table('uigenesis_accounts')->insertGetId([
+        $id = DB::table('users')->insertGetId([
+            'username' => $this->uniqueUsername($data['name'], $email),
             'name' => trim($data['name']),
             'email' => $email,
             'password' => Hash::make($data['password']),
@@ -75,7 +76,7 @@ class AuthController
 
     public function verifyEmail(string $token): RedirectResponse
     {
-        $account = DB::table('uigenesis_accounts')
+        $account = DB::table('users')
             ->where('verification_token_hash', hash('sha256', $token))
             ->where('verification_expires_at', '>', now())
             ->first();
@@ -84,7 +85,7 @@ class AuthController
             return redirect()->route('login')->withErrors(['email' => 'Tautan verifikasi tidak valid atau sudah kedaluwarsa. Masuk untuk meminta tautan baru.']);
         }
 
-        DB::table('uigenesis_accounts')->where('id', $account->id)->update([
+        DB::table('users')->where('id', $account->id)->update([
             'email_verified_at' => now(),
             'verification_token_hash' => null,
             'verification_expires_at' => null,
@@ -112,7 +113,7 @@ class AuthController
 
         $this->ensureDemoAccount();
         $this->importLegacyAccounts();
-        $account = DB::table('uigenesis_accounts')->where('email', $email)->first();
+        $account = DB::table('users')->where('email', $email)->first();
         if (!$account || !Hash::check($credentials['password'], $account->password)) {
             RateLimiter::hit($key, 60);
             return back()->withErrors(['email' => 'Email atau password tidak cocok. Jika belum punya akun, silakan daftar.'])->onlyInput('email');
@@ -125,7 +126,7 @@ class AuthController
             }
             RateLimiter::hit($verificationKey, 60);
             $token = Str::random(64);
-            DB::table('uigenesis_accounts')->where('id', $account->id)->update([
+            DB::table('users')->where('id', $account->id)->update([
                 'verification_token_hash' => hash('sha256', $token),
                 'verification_expires_at' => now()->addHour(),
                 'updated_at' => now(),
@@ -154,11 +155,13 @@ class AuthController
 
     private function ensureDemoAccount(): void
     {
-        DB::table('uigenesis_accounts')->insertOrIgnore([
+        DB::table('users')->insertOrIgnore([
             'name' => 'Demo Designer',
             'email' => self::DEMO_EMAIL,
             'password' => Hash::make('demo123'),
             'email_verified_at' => now(),
+            'username' => $this->uniqueUsername('Demo Designer', self::DEMO_EMAIL),
+            'plan' => 'free',
             'mockups_used' => 0,
             'created_at' => now(),
             'updated_at' => now(),
@@ -180,10 +183,12 @@ class AuthController
                 continue;
             }
             $now = now();
-            DB::table('uigenesis_accounts')->insertOrIgnore([
+            DB::table('users')->insertOrIgnore([
                 'name' => mb_substr((string) ($account['name'] ?? 'Pengguna UIGenesis'), 0, 80),
                 'email' => Str::lower($email),
                 'password' => $account['password'],
+                'username' => $this->uniqueUsername((string) ($account['name'] ?? 'Pengguna UIGenesis'), $email),
+                'plan' => 'free',
                 'mockups_used' => 0,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -191,11 +196,26 @@ class AuthController
         }
     }
 
+    private function uniqueUsername(string $name, string $email): string
+    {
+        $base = Str::slug($name) ?: Str::slug(Str::before($email, '@')) ?: 'pengguna';
+        $base = mb_substr($base, 0, 180);
+        $username = $base;
+        $suffix = 2;
+
+        while (DB::table('users')->where('username', $username)->exists()) {
+            $username = mb_substr($base, 0, 180 - strlen((string) $suffix)).'-'.$suffix;
+            $suffix++;
+        }
+
+        return $username;
+    }
+
     private function startSession(Request $request, object $account): void
     {
         $request->session()->regenerate();
         $request->session()->put([
-            'uig_account_id' => (int) $account->id,
+            'uig_user_id' => (int) $account->id,
             'uig_user' => ['name' => $account->name, 'email' => $account->email, 'plan' => ucfirst($account->plan ?? 'free')],
         ]);
     }

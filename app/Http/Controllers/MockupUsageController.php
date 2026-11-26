@@ -12,18 +12,18 @@ class MockupUsageController
 
     public function consume(Request $request): JsonResponse
     {
-        $accountId = (int) $request->session()->get('uig_account_id');
-        $account = DB::table('uigenesis_accounts')->where('id', $accountId)->first();
+        $userId = (int) $request->session()->get('uig_user_id');
+        $account = DB::table('users')->where('id', $userId)->first();
         if (!$account || !$account->email_verified_at) {
             return response()->json(['ok' => false, 'message' => 'Silakan masuk kembali.'], 401);
         }
 
-        $query = DB::table('uigenesis_accounts')->where('id', $accountId);
+        $query = DB::table('users')->where('id', $userId);
         if ($account->plan === 'free') {
             $query->where('mockups_used', '<', self::FREE_MOCKUP_LIMIT);
         }
         $updated = $query->increment('mockups_used');
-        $used = (int) (DB::table('uigenesis_accounts')->where('id', $accountId)->value('mockups_used') ?? 0);
+        $used = (int) (DB::table('users')->where('id', $userId)->value('mockups_used') ?? 0);
         if (!$updated) {
             return response()->json([
                 'ok' => false,
