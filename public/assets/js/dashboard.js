@@ -58,11 +58,12 @@
 
   /* ---------- 01. DATA DRAFT & STATE ---------- */
   const defaultState = () => ({
-    brand: 'Nusantara', type: 'landing', font: 'Inter', radius: 'rounded',
+    brand: 'Nusantara', logo: null, type: 'landing', font: 'Inter', radius: 'rounded',
     mode: 'light', harmony: 'analogous', colors: { ...PRESETS[0].colors }, locks: {}
   });
   let state = Store.get('uig_draft', null) || defaultState();
   state.locks = state.locks || {};
+  state.logo = state.logo || null;
   let editingId = Store.get('uig_editing', null);
   let device = 'desktop';
   let codeFmt = 'css';
@@ -349,6 +350,58 @@
       features: $$('#featureOptions input:checked').map(o => o.value)
     };
   };
+  const logoInput = $('#appLogoInput');
+  const logoPreview = $('#appLogoPreview');
+  function syncLogoPreview() {
+    logoPreview.hidden = !state.logo;
+    $('#appLogoPreviewImage').src = state.logo || '';
+  }
+  logoInput.addEventListener('change', () => {
+    const file = logoInput.files?.[0];
+    logoInput.value = '';
+    if (!file) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      toast('Pilih logo berformat PNG, JPG, atau WebP.', 'error');
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      toast('Ukuran logo maksimal 4 MB.', 'error');
+      return;
+    }
+    const imageUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(imageUrl);
+      const scale = Math.min(1, 512 / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+      const logo = canvas.toDataURL('image/webp', 0.82);
+      if (logo.length > 400000) {
+        toast('File logo terlalu besar setelah diproses. Coba gambar yang lebih sederhana.', 'error');
+        return;
+      }
+      state.logo = logo;
+      syncLogoPreview();
+      saveDraft();
+      if (!$('#mockupSection').hidden) renderMockup(true);
+      toast('Logo berhasil ditambahkan');
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(imageUrl);
+      toast('Logo tidak dapat dibaca. Coba pilih file gambar lain.', 'error');
+    };
+    image.src = imageUrl;
+  });
+  $('#removeAppLogoBtn').addEventListener('click', () => {
+    state.logo = null;
+    syncLogoPreview();
+    saveDraft();
+    if (!$('#mockupSection').hidden) renderMockup(true);
+    toast('Logo dihapus');
+  });
+  syncLogoPreview();
   function renderPageSwitcher() {
     const bar = $('#prototypePages');
     const pages = state.application?.pages || [];
@@ -759,7 +812,7 @@
     if (full) {
       const page = state.currentPage || state.application?.pages?.[0] || 'Home';
       const savedPage = state.application ? state.customPages?.[page] : null;
-      const generated = state.application ? renderPrototypePage(state, page) : TEMPLATES[state.type].render(state.brand);
+      const generated = state.application ? renderPrototypePage(state, page) : TEMPLATES[state.type].render(state.brand, state);
       mockEl.innerHTML = savedPage || state.customHtml || generated;
       if (!$('#generatorFlow').classList.contains('stage-edit')) {
         mockEl.querySelectorAll('[contenteditable="true"]').forEach(el => { el.contentEditable = 'false'; });
@@ -839,7 +892,7 @@
     const p = {
       id: existing ? existing.id : uid(),
       name: $('#saveName').value.trim() || state.brand,
-      brand: state.brand, type: state.type, font: state.font, radius: state.radius,
+      brand: state.brand, logo: state.logo || null, type: state.type, font: state.font, radius: state.radius,
       mode: state.mode, harmony: state.harmony, colors: { ...state.colors }, application: state.application || null, customHtml: state.customHtml || null,
       currentPage: state.currentPage || null, customPages: state.customPages || {},
       created: existing ? existing.created : now, updated: now
@@ -853,7 +906,8 @@
   function loadProject(id) {
     const p = Projects.get(id);
     if (!p) return;
-    state = { brand: p.brand || p.name, type: p.type, font: p.font, radius: p.radius, mode: p.mode, harmony: p.harmony || 'analogous', colors: { ...p.colors }, application: p.application || null, currentPage: p.currentPage || p.application?.pages?.[0] || 'Home', customPages: p.customPages || {}, customHtml: p.customHtml || null, locks: {} };
+    state = { brand: p.brand || p.name, logo: p.logo || null, type: p.type, font: p.font, radius: p.radius, mode: p.mode, harmony: p.harmony || 'analogous', colors: { ...p.colors }, application: p.application || null, currentPage: p.currentPage || p.application?.pages?.[0] || 'Home', customPages: p.customPages || {}, customHtml: p.customHtml || null, locks: {} };
+    syncLogoPreview();
     editingId = p.id;
     saveDraft(); syncControls(); syncSwatches();
     openRequestedProject = location.hash !== '#generator';
@@ -865,6 +919,7 @@
   function startNewDesign() {
     if ($('#generatorFlow').classList.contains('stage-edit')) finishCanvasEdit();
     state = defaultState(); editingId = null;
+    syncLogoPreview();
     $('#appNameInput').value = state.brand;
     $('#appCategory').value = 'commerce';
     $('#appStyle').value = 'modern';

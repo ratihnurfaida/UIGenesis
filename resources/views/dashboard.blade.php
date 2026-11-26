@@ -107,6 +107,19 @@
             <div class="panel-sec" id="briefSection">
               <h4>Formulir Kebutuhan Aplikasi</h4>
               <label class="field"><span>Nama aplikasi</span><input class="input" id="appNameInput" maxlength="40" placeholder="Contoh: TokoKita"></label>
+              <div class="field logo-upload-field">
+                <span>Logo <small>(opsional)</small></span>
+                <div class="logo-upload-row">
+                  <label class="btn btn-ghost btn-sm" for="appLogoInput"><i data-icon="upload"></i>Pilih logo</label>
+                  <input id="appLogoInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                  <small class="muted">PNG, JPG, atau WebP · maks. 4 MB</small>
+                </div>
+                <div class="logo-upload-preview" id="appLogoPreview" hidden>
+                  <img id="appLogoPreviewImage" alt="Pratinjau logo">
+                  <span class="muted">Logo siap digunakan</span>
+                  <button class="btn btn-ghost btn-sm" type="button" id="removeAppLogoBtn">Hapus</button>
+                </div>
+              </div>
               <label class="field"><span>Kategori aplikasi</span><select class="select" id="appCategory"><option value="commerce">E-commerce</option><option value="productivity">Produktivitas</option><option value="education">Edukasi</option><option value="food">Kuliner</option><option value="portfolio">Portofolio</option><option value="content">Konten &amp; komunitas</option></select></label>
               <label class="field"><span>Gaya desain</span><select class="select" id="appStyle"><option value="modern">Modern &amp; bersih</option><option value="playful">Ceria &amp; ekspresif</option><option value="elegant">Elegan &amp; premium</option><option value="natural">Natural &amp; hangat</option><option value="minimal">Minimal &amp; profesional</option></select></label>
               <fieldset class="field option-field"><legend>Halaman yang dibutuhkan</legend><div class="option-check-grid" id="pageOptions"></div></fieldset>

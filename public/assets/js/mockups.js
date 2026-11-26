@@ -109,7 +109,9 @@ const MOCKUP_CSS = `
 .mk svg{width:20px;height:20px;flex:none}
 .mk-nav{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 32px;border-bottom:1px solid var(--border)}
 .mk-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;white-space:nowrap}
-.mk-logo i{width:30px;height:30px;border-radius:calc(var(--r)*.5 + 4px);background:linear-gradient(135deg,var(--p),var(--a));display:block}
+.mk-logo i,.mk-logo img{width:30px;height:30px;flex:none;border-radius:calc(var(--r)*.5 + 4px);object-fit:contain}
+.mk-logo i{background:linear-gradient(135deg,var(--p),var(--a));display:block}
+.mk-logo img{padding:2px;background:#fff;border:1px solid var(--border)}
 .mk-links{display:flex;gap:28px;font-size:14px;font-weight:500;color:var(--muted)}
 .mk-links a:first-child{color:var(--tx);font-weight:600}
 .mk-navr{display:flex;align-items:center;gap:10px}
@@ -335,13 +337,17 @@ const MOCKUP_CSS = `
 const mkIcon = n => icon(n);
 const esc = s => escapeHtml(s);
 
-function mkNav(brand, links, right) {
-  return `<header class="mk-nav"><a class="mk-logo"><i></i>${esc(brand)}</a>
+function mkBrandLogo(brand, logo) {
+  const validLogo = typeof logo === 'string' && /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(logo);
+  return `<a class="mk-logo">${validLogo ? `<img src="${esc(logo)}" alt="">` : '<i></i>'}${esc(brand)}</a>`;
+}
+function mkNav(brand, links, right, logo) {
+  return `<header class="mk-nav">${mkBrandLogo(brand, logo)}
   <nav class="mk-links">${links.map(l => `<a>${l}</a>`).join('')}</nav>
   <div class="mk-navr">${right}</div></header>`;
 }
-function mkFoot(brand) {
-  return `<footer class="mk-foot"><a class="mk-logo"><i></i>${esc(brand)}</a>
+function mkFoot(brand, logo) {
+  return `<footer class="mk-foot">${mkBrandLogo(brand, logo)}
   <nav><a>Tentang</a><a>Karier</a><a>Bantuan</a><a>Privasi</a></nav>
   <span>© ${new Date().getFullYear()} ${esc(brand)}. Hak cipta dilindungi.</span></footer>`;
 }
@@ -357,8 +363,8 @@ window.UIGenesisPrototypeUtils = {
     const brand = st.brand || 'Aplikasi Baru';
     const pages = st.application?.pages?.length ? st.application.pages : ['Home'];
     const cart = pages.includes('Cart') ? this.go(st, 'Cart', 'Keranjang', 'mk-btn ghost sm') : '';
-    const header = `<header class="mk-nav"><a class="mk-logo"><i></i>${esc(brand)}</a><nav class="mk-links">${pages.slice(0, 5).map(page => `<a href="#" data-proto-goto="${esc(page)}">${esc(page)}</a>`).join('')}</nav><div class="mk-navr">${cart}</div></header>`;
-    return `${header}${content}${mkFoot(brand)}`;
+    const header = `<header class="mk-nav">${mkBrandLogo(brand, st.logo)}<nav class="mk-links">${pages.slice(0, 5).map(page => `<a href="#" data-proto-goto="${esc(page)}">${esc(page)}</a>`).join('')}</nav><div class="mk-navr">${cart}</div></header>`;
+    return `${header}${content}${mkFoot(brand, st.logo)}`;
   }
 };
 
@@ -366,8 +372,8 @@ window.UIGenesisPrototypeUtils = {
 const TEMPLATES = {
   landing: {
     label: 'Landing Page', icon: 'rocket', url: 'beranda',
-    render: b => `
-${mkNav(b, ['Produk', 'Fitur', 'Harga', 'Blog'], '<a class="mk-btn ghost sm">Masuk</a><a class="mk-btn sm">Mulai Gratis</a>')}
+    render: (b, st = {}) => `
+${mkNav(b, ['Produk', 'Fitur', 'Harga', 'Blog'], '<a class="mk-btn ghost sm">Masuk</a><a class="mk-btn sm">Mulai Gratis</a>', st.logo)}
 <section class="w mk-hero">
   <div>
     <span class="mk-badge"><i></i>Versi 2.0 telah hadir</span>
@@ -400,12 +406,12 @@ ${mkNav(b, ['Produk', 'Fitur', 'Harga', 'Blog'], '<a class="mk-btn ghost sm">Mas
   </div>
 </div></section>
 <section class="mk-sec"><div class="w"><div class="mk-cta"><h2>Siap memulai perjalanan Anda?</h2><p>Bergabung dengan ribuan tim yang sudah tumbuh bersama ${esc(b)}.</p><a class="mk-btn">Daftar Sekarang</a></div></div></section>
-${mkFoot(b)}`
+${mkFoot(b, st.logo)}`
   },
 
   ecommerce: {
     label: 'E-Commerce', icon: 'cart', url: 'toko',
-    render: b => {
+    render: (b, st = {}) => {
       const products = [
         ['Kemeja Linen', '289.000', '359.000', 'Baru', ''], ['Sneakers Urban', '649.000', '', '', 'v2'],
         ['Tas Kanvas', '199.000', '249.000', '-20%', 'v3'], ['Jam Minimalis', '899.000', '', '', 'v4'],
@@ -414,7 +420,7 @@ ${mkFoot(b)}`
       ];
       return `
 <div class="mk-promo">Gratis ongkir untuk pembelian di atas Rp250rb — gunakan kode <b>HEMAT25</b></div>
-${mkNav(b, ['Pria', 'Wanita', 'Aksesoris', 'Promo'], `<div class="mk-search">${mkIcon('search')}Cari produk…</div><a class="mk-iconbtn">${mkIcon('user')}</a><a class="mk-iconbtn">${mkIcon('cart')}<sup>3</sup></a>`)}
+${mkNav(b, ['Pria', 'Wanita', 'Aksesoris', 'Promo'], `<div class="mk-search">${mkIcon('search')}Cari produk…</div><a class="mk-iconbtn">${mkIcon('user')}</a><a class="mk-iconbtn">${mkIcon('cart')}<sup>3</sup></a>`, st.logo)}
 <div class="w">
   <section class="mk-banner">
     <div><span class="mk-badge"><i></i>Koleksi Musim Ini</span><h1>Gaya baru, cerita baru.</h1><p class="mk-muted">Diskon hingga 40% untuk koleksi pilihan. Hanya minggu ini.</p><div class="mk-row" style="margin-top:24px"><a class="mk-btn">Belanja Sekarang</a><a class="mk-btn ghost">Lihat Katalog</a></div></div>
@@ -428,13 +434,13 @@ ${mkNav(b, ['Pria', 'Wanita', 'Aksesoris', 'Promo'], `<div class="mk-search">${m
   </div>
   <section class="mk-sec" style="padding-bottom:70px"><div class="mk-news"><div><h3>Dapatkan diskon 15%</h3><p>Langganan newsletter untuk promo eksklusif dan rilis terbaru.</p></div><div class="mk-row"><input class="mk-input" placeholder="Alamat email Anda"><a class="mk-btn acc">Langganan</a></div></div></section>
 </div>
-${mkFoot(b)}`;
+${mkFoot(b, st.logo)}`;
     }
   },
 
   blog: {
     label: 'Blog', icon: 'pen', url: 'blog',
-    render: b => {
+    render: (b, st = {}) => {
       const posts = [
         ['Desain', '7 Prinsip Tipografi untuk Antarmuka Modern', 'Panduan praktis memilih dan memadukan huruf agar konten mudah dibaca.', ''],
         ['Produk', 'Cara Menyusun Roadmap yang Disukai Tim', 'Pelajari teknik prioritas yang membuat semua orang selaras.', 'v2'],
@@ -442,7 +448,7 @@ ${mkFoot(b)}`;
         ['Karier', 'Membangun Portofolio Desainer yang Menonjol', 'Tips dari perekrut tentang apa yang benar-benar mereka cari.', 'v4']
       ];
       return `
-${mkNav(b, ['Terbaru', 'Desain', 'Teknologi', 'Karier'], '<a class="mk-btn sm">Berlangganan</a>')}
+${mkNav(b, ['Terbaru', 'Desain', 'Teknologi', 'Karier'], '<a class="mk-btn sm">Berlangganan</a>', st.logo)}
 <div class="w">
   <section class="mk-feat">
     <div class="mk-img"></div>
@@ -458,14 +464,14 @@ ${mkNav(b, ['Terbaru', 'Desain', 'Teknologi', 'Karier'], '<a class="mk-btn sm">B
     </aside>
   </div>
 </div>
-${mkFoot(b)}`;
+${mkFoot(b, st.logo)}`;
     }
   },
 
   portfolio: {
     label: 'Portofolio', icon: 'user', url: 'karya',
-    render: b => `
-${mkNav(b, ['Karya', 'Layanan', 'Tentang', 'Kontak'], '<a class="mk-btn sm">Hubungi Saya</a>')}
+    render: (b, st = {}) => `
+${mkNav(b, ['Karya', 'Layanan', 'Tentang', 'Kontak'], '<a class="mk-btn sm">Hubungi Saya</a>', st.logo)}
 <section class="w mk-port">
   <div class="hey"><i></i><div><b>Halo, saya ${esc(b)} 👋</b><div class="mk-muted">Product Designer · Bandung, Indonesia</div></div></div>
   <h1>Saya merancang <em>pengalaman digital</em> yang sederhana dan bermakna.</h1>
@@ -484,18 +490,18 @@ ${mkNav(b, ['Karya', 'Layanan', 'Tentang', 'Kontak'], '<a class="mk-btn sm">Hubu
   <div class="mk-svc"><span class="n">03</span><h3>Branding &amp; Web</h3><p>Identitas visual dan website yang menyampaikan cerita brand dengan jelas.</p></div>
 </div></section>
 <section class="w" style="padding-bottom:80px"><div class="mk-cta"><h2>Punya ide proyek? Mari ngobrol.</h2><p>Saya biasanya membalas dalam 24 jam.</p><a class="mk-btn">halo@${esc(b.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'studio')}.id</a></div></section>
-${mkFoot(b)}`
+${mkFoot(b, st.logo)}`
   },
 
   saas: {
     label: 'Dashboard App', icon: 'layout', url: 'app/dashboard',
-    render: b => {
+    render: (b, st = {}) => {
       const bars = [42, 58, 46, 72, 64, 88, 76, 94, 70, 82, 60, 78];
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
       const rows = [['Andi Wijaya', 'Paket Pro', 'Rp149.000', 'ok', 'Lunas'], ['Siti Rahma', 'Paket Bisnis', 'Rp499.000', 'ok', 'Lunas'], ['Budi Santoso', 'Paket Pro', 'Rp149.000', 'pd', 'Tertunda'], ['Dewi Lestari', 'Paket Starter', 'Rp0', 'ok', 'Aktif']];
       return `
 <div class="mk-app">
-  <aside class="mk-aside"><a class="mk-logo"><i></i>${esc(b)}</a>
+  <aside class="mk-aside">${mkBrandLogo(b, st.logo)}
     <nav><a class="on">${mkIcon('home')}Ringkasan</a><a>${mkIcon('chart')}Analitik</a><a>${mkIcon('user')}Pelanggan</a><a>${mkIcon('folder')}Proyek</a><a>${mkIcon('mail')}Pesan</a><a>${mkIcon('gear')}Pengaturan</a></nav>
     <div class="up"><b>Upgrade ke Pro</b><span class="mk-muted">Buka semua fitur analitik.</span><div style="margin-top:12px"><a class="mk-btn sm">Upgrade</a></div></div>
   </aside>
@@ -547,7 +553,7 @@ ${MOCKUP_CSS}
 </head>
 <body>
 <div class="mk" style="${mockupVars(st)}">
-${st.customPages?.[st.currentPage] || st.customHtml || (st.application ? renderPrototypePage(st, st.currentPage || st.application.pages?.[0] || 'Home') : tpl.render(st.brand))}
+${st.customPages?.[st.currentPage] || st.customHtml || (st.application ? renderPrototypePage(st, st.currentPage || st.application.pages?.[0] || 'Home') : tpl.render(st.brand, st))}
 </div>
 </body>
 </html>`;

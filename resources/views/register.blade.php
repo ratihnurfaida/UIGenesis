@@ -13,7 +13,7 @@
 <body>
 <div class="auth">
   <aside class="auth-art">
-    <a href="{{ route('home') }}" class="logo"><span class="logo-mark"></span><span>UI<b style="color:#b9a8ff">Genesis</b></span></a>
+    <a href="{{ route('home') }}" class="logo"><span class="logo-mark" aria-hidden="true">G</span><span>UI<b style="color:#b9a8ff">Genesis</b></span></a>
     <div>
       <div class="auth-swatches"><i style="background:#6d4aff"></i><i style="background:#00c2a8"></i><i style="background:#ff7a59"></i><i style="background:#fbfaff"></i><i style="background:#1b1530"></i></div>
       <h2>Mulai dari satu warna. Bangun seluruh ide visualmu.</h2>

@@ -23,7 +23,7 @@
     </nav>
     <div class="nav-actions" id="navActions">
       <a href="{{ route('login') }}" class="btn btn-ghost">Masuk</a>
-      <a href="{{ route('register') }}" class="btn btn-primary">Daftar</a>
+      <a href="{{ route('register') }}" class="btn btn-primary">Coba Gratis</a>
     </div>
   </div>
 </header>
@@ -31,7 +31,7 @@
 <section class="hero">
   <div class="container hero-grid">
     <div>
-      <span class="pill"><span>Baru</span>Generator mockup dengan 5 template website</span>
+      <span class="pill"><span>Gratis</span>5 template · koleksi lengkap di paket Pro</span>
       <h1>Pilih warnanya,<br><span class="grad-text">UIGenesis</span> bangun tampilannya.</h1>
       <p class="lead">Tentukan palet warna brand Anda, lalu lihat langsung bagaimana warna itu hidup di landing page, toko online, blog, portofolio, hingga dashboard aplikasi.</p>
       <div class="hero-cta">
