@@ -16,7 +16,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.store');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 Route::get('/verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('verify-email');
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth.session')->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Halaman yang hanya bisa dibuka setelah login
 Route::middleware('auth.session')->group(function (): void {
